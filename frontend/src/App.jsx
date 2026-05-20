@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
 
   const fetchMovies = async () => {
     try {
-      const response = await fetch('http://localhost:8000/movies')
+      const response = await fetch(`${API_BASE_URL}/movies`)
       if (!response.ok) throw new Error('Failed to fetch movies')
       const data = await response.json()
       setMovies(data.movies)
@@ -40,7 +41,7 @@ function App() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`http://localhost:8000/recommend/${encodeURIComponent(selectedMovie)}`)
+      const response = await fetch(`${API_BASE_URL}/recommend/${encodeURIComponent(selectedMovie)}`)
       if (!response.ok) throw new Error('Recommendation failed (Movie might not exist)')
       const data = await response.json()
       
