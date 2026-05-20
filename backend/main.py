@@ -17,8 +17,8 @@ app.add_middleware(
 
 # Load data at startup
 try:
-    dict_path = os.path.join(os.path.dirname(__file__), '..', 'movies_dict.pkl')
-    sim_path = os.path.join(os.path.dirname(__file__), '..', 'similarity16.pkl')
+    dict_path = os.path.join(os.path.dirname(__file__), 'movies_dict.pkl')
+    sim_path = os.path.join(os.path.dirname(__file__), 'similarity16.pkl')
     
     with open(dict_path, 'rb') as f:
         movies_dict = pickle.load(f)
@@ -72,4 +72,5 @@ def recommend(movie: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
