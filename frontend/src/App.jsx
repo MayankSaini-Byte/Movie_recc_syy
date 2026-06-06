@@ -1,117 +1,18 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
+import HeroPage from './pages/HeroPage'
+import DiscoverPage from './pages/DiscoverPage'
 
 function App() {
-  const [movies, setMovies] = useState([])
-  const [selectedMovie, setSelectedMovie] = useState('')
-  const [recommendations, setRecommendations] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    fetchMovies()
-  }, [])
-
-  const fetchMovies = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/movies`)
-      if (!response.ok) throw new Error('Failed to fetch movies')
-      const data = await response.json()
-      setMovies(data.movies)
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  const fetchPoster = async (movieId) => {
-    try {
-      const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=en-US`);
-      const data = await response.json();
-      return data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null;
-    } catch (err) {
-      return null;
-    }
-  }
-
-  const handleRecommend = async () => {
-    if (!selectedMovie) return
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await fetch(`${API_BASE_URL}/recommend/${encodeURIComponent(selectedMovie)}`)
-      if (!response.ok) throw new Error('Recommendation failed (Movie might not exist)')
-      const data = await response.json()
-      
-      const recsWithPosters = await Promise.all(
-        data.recommendations.map(async (rec) => {
-          const posterUrl = await fetchPoster(rec.id);
-          return { ...rec, posterUrl };
-        })
-      );
-      
-      setRecommendations(recsWithPosters)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const location = useLocation()
 
   return (
-    <div className="app-container">
-      <div className="glass-panel">
-        <h1 className="title">CineMatch AI</h1>
-        <p className="subtitle">Discover your next cinematic journey.</p>
-        
-        <div className="input-group">
-          <select 
-            value={selectedMovie} 
-            onChange={(e) => setSelectedMovie(e.target.value)}
-            className="movie-select"
-          >
-            <option value="">Select a masterpiece...</option>
-            {movies.map((m, idx) => (
-              <option key={idx} value={m}>{m}</option>
-            ))}
-          </select>
-
-          <button 
-            onClick={handleRecommend} 
-            disabled={!selectedMovie || loading || movies.length === 0}
-            className="recommend-btn"
-          >
-            {loading ? 'Analyzing...' : 'Recommend'}
-          </button>
-        </div>
-
-        {error && <div className="error-message">{error}</div>}
-
-        {recommendations.length > 0 && (
-          <div className="recommendations-container">
-            <h2 className="recommendations-title">We recommend:</h2>
-            <div className="movie-grid">
-              {recommendations.map((rec) => (
-                <div key={rec.id} className="movie-card">
-                  <div className="movie-poster-wrapper">
-                    {rec.posterUrl ? (
-                      <img src={rec.posterUrl} alt={rec.title} className="movie-poster" />
-                    ) : (
-                      <div className="movie-poster-placeholder">
-                        <span>No Poster</span>
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="movie-card-title">{rec.title}</h3>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<HeroPage />} />
+        <Route path="/discover" element={<DiscoverPage />} />
+      </Routes>
+    </AnimatePresence>
   )
 }
 
